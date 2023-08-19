@@ -1,46 +1,33 @@
-#include "../s21_matrix.h"
+#include "s21_test.h"
 
 int main() {
-    matrix_t A = {0};
-    matrix_t B = {0};
-    matrix_t result = {0};
-    int res_value = -1;
-    // double res = 0;
-    int cols = 3;
-    int rows = 3;
-    
-    s21_create_matrix(rows, cols , &A);
-    s21_create_matrix(cols, cols , &B);
-    // s21_create_matrix(rows, cols , &result);
-    
-    srand(time(NULL));
-    s21_matrix_set_value(&A);
-    // srand(time(NULL));
+  run_tests();
+  return 0;
+}
+    void run_tests() {
+  Suite *case_tests[] = {
+                         test_eq_matrix(),
+                         test_transpose(),
+                         test_sum_matrix(),
+                         test_sub_matrix(),
+                         test_structure(),
+                         test_mult_number(),
+                         test_mult_matrix(),
+                         test_inverse(),
+                         test_determenant(),
+                         test_calc_complements(),
+                         NULL};
+  for (Suite **ptr_test = case_tests; *ptr_test != NULL; ptr_test++)
+    run_test_case(*ptr_test);
+}
 
-    s21_matrix_set_value(&B);
-    
-    printf("matrix A\n");
-    s21_print_matrix(&A);
-    printf("matrix B\n");
-    s21_print_matrix(&B);
+void run_test_case(Suite *ptr_test) {
+  static int count_test = 1;
 
-// if(s21_eq_matrix(&A, &B)) printf("матрицы равны\n");
-// else printf("матрицы не равны\n");
-    res_value = s21_sum_matrix(&A, &B, &result);
-    
-    // s21_sub_matrix(&A, &B, &result);
-    // s21_mult_number(&A, 12.3, &result);
-    // s21_mult_matrix(&A, &B, &result);
-    // s21_transpose(&A, &result);
-    // s21_determinant(&A, &res);
-    // printf("res = %f\n", res);
-    // s21_calc_complements(&A, &result);
-    printf("matrix result\n");
-    s21_print_matrix(&result);
-    printf("res_value: %d\n", res_value);
-
-
-    s21_remove_matrix(&A);
-    s21_remove_matrix(&B);
-    s21_remove_matrix(&result);
+  if (count_test > 0) putchar('\n');
+  printf("%s%d\n", "CURRENT TEST: ", count_test);
+  count_test++;
+  SRunner *srun = srunner_create(ptr_test);
+  srunner_run_all(srun, CK_NORMAL);
+  srunner_free(srun);
 }

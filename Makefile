@@ -1,40 +1,52 @@
-# Компилятор и флаги
+# Compiler settings
 CC = gcc
-CFLAGS = -Wall -Wextra -Werror -std=c11
-LDFLAGS = -lcheck -lrt -lsubunit -pthread
+CFLAGS = -Wall -Werror -std=c11
 
-# Директории
-FUNCTION_DIR = function
-TEST_DIR = test
-OBJ_DIR = OBJ
+# Directories
+SRC_DIR = .
+FUNCTION_DIR = $(SRC_DIR)/function
+OBJ_DIR = $(SRC_DIR)/OBJ
 
-# Файлы
-HEADER = s21_matrix.h
-FUNCTION_FILES = $(wildcard $(FUNCTION_DIR)/*.c)
-TEST_FILES = $(wildcard $(TEST_DIR)/*.c)
-OBJ_FILES = $(patsubst $(FUNCTION_DIR)/%.c,$(OBJ_DIR)/%.o,$(FUNCTION_FILES))
-.PHONY: all test clean rebuild
+# Source files
+FUNCTION_SRCS = $(wildcard $(FUNCTION_DIR)/*.c)
 
-all: s21_matrix.a
+# Object files
+FUNCTION_OBJS = $(patsubst $(FUNCTION_DIR)/%.c, $(OBJ_DIR)/%.o, $(FUNCTION_SRCS))
 
-s21_matrix.a: $(OBJ_FILES)
-	ar rcs $@ $^
+# Final library
+LIBRARY = $(SRC_DIR)/s21_matrix.a
 
-$(OBJ_DIR)/%.o: $(FUNCTION_DIR)/%.c $(HEADER)
-	$(CC) $(CFLAGS) -c -o $@ $<
+# Targets
+.PHONY: all test gcov_report clean
+
+all: $(LIBRARY)
+
+$(OBJ_DIR)/%.o: $(FUNCTION_DIR)/%.c
+	$(CC) $(CFLAGS) -c $< -o $@
+
+$(LIBRARY): $(FUNCTION_OBJS)
+	ar rcs $@ $(FUNCTION_OBJS)
+
+test: CFLAGS += -I$(SRC_DIR)
+test: LIBS = -lcheck -lsubunit -lm
+test: $(LIBRARY)
+	$(CC) $(CFLAGS) -o $(SRC_DIR)/s21_test_matrix test/s21_test.c $(LIBRARY) $(LIBS)
+	$(SRC_DIR)/s21_test_matrix
+
+gcov_report: CFLAGS += -fprofile-arcs -ftest-coverage
+gcov_report: LIBRARY = $(SRC_DIR)/s21_matrix_gcov.a
+gcov_report: $(LIBRARY)
+	$(CC) $(CFLAGS) -o $(SRC_DIR)/s21_test_matrix_gcov test/s21_test.c $(LIBRARY) $(LIBS)
+	$(SRC_DIR)/s21_test_matrix_gcov
+	gcovr -r $(FUNCTION_DIR) --html-details -o $(SRC_DIR)/coverage_report.html
 
 clean:
-	rm -f s21_matrix.a $(TEST_DIR)/test_executable $(OBJ_DIR)/*.o
-	rm -rf s21_test
+	rm -f $(OBJ_DIR)/*.o
+	rm -f $(SRC_DIR)/s21_matrix.a
+	rm -f $(SRC_DIR)/s21_matrix_gcov.a
+	rm -f $(SRC_DIR)/s21_test_matrix
+	rm -f $(SRC_DIR)/s21_test_matrix_gcov
+	rm -f $(SRC_DIR)/*.gcda
+	rm -f $(SRC_DIR)/*.gcno
+	rm -f $(SRC_DIR)/coverage_report.html
 	clear
-	
-rebuild: clean all
-
-valgrind: test
-	valgrind --tool=memcheck --leak-check=yes s21_test
-
-test: s21_test
-	./s21_test
-
-s21_test: $(TEST_FILES) s21_matrix.a
-	$(CC) $(CFLAGS) $(LDFLAGS) -o $@ $^ -lm

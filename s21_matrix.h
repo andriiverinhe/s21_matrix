@@ -26,9 +26,10 @@ typedef struct matrix_struct {
     int columns;
 } matrix_t;
 
+//HELPERS
 bool is_empty(matrix_t *matrix);
 bool size_eq(matrix_t *A, matrix_t *B);
-
+double get_rand(double min, double max);
 
 int s21_create_matrix(int rows, int columns, matrix_t *result);      // Создание матриц
 void s21_remove_matrix(matrix_t *A);                                 // Очистка матриц
