@@ -44,10 +44,10 @@ double s21_rec_det(matrix_t *A) {
 }
 
 int s21_determinant(matrix_t *A, double *result) {
-    if(!A->matrix) return FAILURE;
-    if(A->rows != A->columns) return FAILURE;
+    if(is_empty(A)) return INCORRECT;
+    if(A->rows != A->columns) return CALCULATION;
 
     *result = s21_rec_det(A);
 
-    return SUCCESS;
+    return TRULY;
 }   

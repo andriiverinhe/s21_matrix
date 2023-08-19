@@ -7,15 +7,16 @@ int s21_create_matrix(int rows, int columns, matrix_t *result) {
     result->columns = columns;
 
     result->matrix = (double **) calloc(rows, sizeof(double *));
+    if(!result->matrix) return INCORRECT;
     for(int i = 0; i < rows; i++) {
         result->matrix[i] = (double *) calloc(columns, sizeof(double));
     }
 
-    return TRULY;
+    return result->matrix == NULL? INCORRECT : TRULY;
 }
 
 void s21_remove_matrix(matrix_t *A) {
-    if(A->matrix){ 
+    if(!is_empty(A)){ 
     for (int i = 0; i < A->rows; i++) {
         free(A->matrix[i]);
     }
